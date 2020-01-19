@@ -34,6 +34,13 @@ function App() {
 
         setDevs([...devs, response.data])
     }
+    async function handleRemoveDev(){
+
+    }
+
+    async function handleUpdateDev(){
+
+    }
 
     return (
         <div id="App">
