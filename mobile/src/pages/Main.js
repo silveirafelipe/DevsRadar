@@ -5,6 +5,9 @@ import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location'
 import { MaterialIcons } from '@expo/vector-icons'
 import api from '../services/api'
 
+import {connect, disconnect, subscribeToNewDevs} from '../services/socket'
+
+
 //Fazer esquema pra subir a barra de busca quando o teclado subir react-native Keyboard
 //A busca é case sensitive, fazer tratativa para considerar qualquer coisa escrita
 //colocar um raio de busca
@@ -38,10 +41,25 @@ export default function Main({ navigation }) {
         loadInitialPosition();
     }, []);
 
-    async function loadDevs() {
-        const { latitude, longitude } = currentRegion;
 
-        console.log(latitude)
+    useEffect(() => {
+        subscribeToNewDevs(dev => setDevs([...devs, dev]))
+    }, [devs])
+
+    function setupWebsocket() {
+        disconnect();
+
+        const { latitude, longitude } = currentRegion;
+       
+        connect(
+            latitude, 
+            longitude, 
+            techs
+        )
+    }
+
+    async function loadDevs() {
+        const { latitude, longitude } = currentRegion;      
 
         const response = await api.get('/search', {
             params: {
@@ -52,6 +70,9 @@ export default function Main({ navigation }) {
         })
 
         setDevs(response.data.devs)
+
+        setupWebsocket();
+
     }
 
     function handleRegionChanged(region) {
